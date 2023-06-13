@@ -1,11 +1,19 @@
-# DataFarm
+# GUIDataFarm
 
 DataFarm is an innovative framework for efficiently generating and labeling large query workloads. 
 It follows a data-driven & white-box approach to learn from pre-existing small workload patterns, input data, and computational resources. 
 Thus, DataFarm allows users to produce a large heterogeneous set of realistic jobs with their labels, which can be used by any ML-based data management component.
-
-```F. Ventura, Z. Kaoudi, J. Quiané-Ruiz, and V. Markl. Expand your Training Limits! Generating and Labeling Jobs for ML-based Data Management. In SIGMOD, 2021.```
-
+````
+@INPROCEEDINGS{vandewaterFarmingYourMLbased2022,
+  author={Van De Water, Robin and Ventura, Francesco and Kaoudi, Zoi and Quiané-Ruiz, Jorge-Arnulfo and Markl, Volker},
+  booktitle={2022 IEEE 38th International Conference on Data Engineering (ICDE)}, 
+  title={Farming Your ML-based Query Optimizer's Food}, 
+  year={2022},
+  volume={},
+  number={},
+  pages={3186-3189},
+  doi={10.1109/ICDE53745.2022.00294}}
+````
 ## Requirements
 
 - SBT >= 1.3 
