@@ -1,3 +1,4 @@
+![GUIDataFarm](guidatafarm.png)
 # GUIDataFarm
 
 DataFarm is an innovative framework for efficiently generating and labeling large query workloads. 
