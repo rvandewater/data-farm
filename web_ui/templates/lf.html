@@ -1,0 +1,1127 @@
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-1">Active Learning Controller</h1>
+        {% if status["early_stop"] %}
+            <div class="alert alert-success" role="alert">
+                Early STOP at iteration {{ status["lf_current_iteration"] + 1 }}!
+            </div>
+        {% endif %}
+        {% if (status["lf_current_iteration"] + 1) >= status["max_iter"] %}
+            <div class="alert alert-warning" role="alert">
+                Max number of iterations reached!
+            </div>
+        {% endif %}
+        {% if status["lf_current_iteration"] < 0 %}
+            <p>Configure the Label Forecaster</p>
+            <form class="" action="/lf_run" method="post" id="lfRunId">
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label" for="targetLabelId">Target Label</label>
+                    <div class="col-sm-10">
+                        <select class="form-select" id="targetLabelId" name="targetLabel">
+                            <option>Execution Time</option>
+                            <option>Output Cardinality</option>
+                        </select>
+                    </div>
+                </div>
+                            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label" for="initialJobSelectionId">Initial Job Selection</label>
+                <div class="col-sm-10">
+                    <select class="form-select" id="initialJobSelectionId" name="initialJobSelection">
+                        <option>Uniform Agglomerative Sampler</option>
+                        <option>Random Sampler</option>
+                    </select>
+                    <div class="mt-2"></div>
+                    <div class="alert alert-primary d-flex align-items-center" role="alert">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                  </svg>
+                  <div>
+                    DataFarm works best in most cases with our <strong>Uniform Agglomerative Sampler</strong>. You can always adjust our automatic sampling throughout the process.
+                  </div>
+                </div>
+                </div>
+            </div>
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label" for="nInitJobsId"># Init Jobs</label>
+                    <div class="col-sm-10">
+                        <input type="number" class="form-control" id="nInitJobsId" name="nInitJobs"
+                               value="50">
+                        <div class="mt-2"></div>
+                <div class="alert alert-primary d-flex align-items-center" role="alert">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                  </svg>
+                  <div>
+                    We suggest sampling at least 50 jobs for <strong>synthetic workloads</strong> and 100 jobs for <strong>real workloads</strong>.
+                  </div>
+
+                </div>
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label" for="uncertaintyThId">Uncertainty Th.</label>
+                    <div class="col-sm-10">
+                        <div class="input-group">
+                            <div class="input-group-text">%</div>
+                            <input type="number" class="form-control" id="uncertaintyThId" name="uncertaintyTh"
+                                   value="10">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label" for="maxIterId">Max. Iterations</label>
+                    <div class="col-sm-4">
+                        <input type="number" class="form-control" id="maxIterId" name="maxIter" value="5">
+                    </div>
+                    <label class="col-sm-2 col-form-label" for="maxTimeId">Max. Time Budget</label>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <div class="input-group-text">Hours</div>
+                            <input type="number" class="form-control" id="maxTimeId" name="maxTime" value="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3 text-center">
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Start Active Learner</button>
+                    </div>
+                </div>
+
+            </form>
+            <script>
+                $("#lfRunId").submit(function (e) {
+
+                    e.preventDefault(); // avoid to execute the actual submit of the form.
+                    setVisible('#loading', true);
+
+                    var form = $(this);
+                    var url = form.attr('action');
+
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: form.serialize(), // serializes the form's elements.
+                        success: function (data) {
+                            setVisible('#loading', false);
+                            window.location.replace("/"); // show response from the php script.
+                            window.location.reload();
+                        }
+                    });
+                });
+            </script>
+        {% else %}
+        <div class="row mb-4 b-2">
+        </div>
+        <div class="row mb-2">
+            <div class="col">
+                <div class="card card-counter shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Iteration</h5>
+                        {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                        <span class="count-numbers">{{ status["lf_current_iteration"] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-counter shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Number of Executed Jobs</h5>
+                        {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                        <span class="count-numbers">{{ active_learning_settings["current_executed_jobs"]|length }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card card-counter shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Execution Time</h5>
+                        {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                        <span class="count-numbers">{{ '{0:0.2f}'.format(active_learning_duration) | safe }} Seconds</span>
+<!--                        <span class="count-numbers">1 Seconds</span>-->
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-counter shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">MSE</h5>
+                        {% if status["lf_current_iteration"] < 1 %}
+                        <span class="count-numbers">0</span>
+                        {% else %}
+                        <span class="count-numbers" id="stats_mse"></span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-counter shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">R&sup2;</h5>
+                        {% if status["lf_current_iteration"] < 1 %}
+                        <span class="count-numbers">0</span>
+                        {% else %}
+                        <span class="count-numbers" id="stats_r2"></span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4 b-2">
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-4">
+            <div class="card card-counter shadow h-100">
+                <div class="card-body h-100">
+                    <h5 class="card-title text-danger">Unselected Jobs</h5>
+                    <div class="card-body h-100" style="max-height: 200px; overflow-y: auto;">
+                        <ul id="unselected_jobs" style=" columns: 3;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-counter shadow h-100">
+                <div class="card-body h-100">
+                    <h5 class="card-title text-warning">Jobs Scheduled for Execution</h5>
+                    <div class="card-body h-100" style="max-height: 200px; overflow-y: auto;">
+                        <ul id="scheduled_jobs" style=" columns: 3;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-counter shadow h-100">
+                <div class="card-body h-100">
+                    <h5 class="card-title text-success">Executed Jobs</h5>
+                    <div class="card-body h-100" style="max-height: 200px; overflow-y: auto;">
+                        <ul id="executed_jobs" style=" columns: 3;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4 b-2">
+    </div>
+    <div class="accordion shadow-lg p-3 mb-5 bg-white rounded" id="accordionPanelsStayOpen">
+        <div class="accordion-item">
+            <div class="text-center">
+                <h2 class="accordion-header" id="panelsStayOpen-headingZero">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#panelsStayOpen-collapseZero" aria-expanded="false"
+                            aria-controls="panelsStayOpen-collapseZero">
+                        <h3><i class="bi bi-bar-chart-fill" style="color: Aqua"></i> Model Statistics</h3>
+                    </button>
+                </h2>
+            </div>
+            <div id="panelsStayOpen-collapseZero" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingZero">
+                <div class="accordion-body">
+
+                    <div class="card card-counter shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Current Model Performance</h5>
+                    <p class="card-text">&#9660; View metrics of the current cross validated model performance, after executing the previous generation.</p>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">Gamma Deviance</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="gamma_deviance_mean"></span>
+                                    <h5 class="card-title">Standard Deviation</h5>
+                                    <span id="gamma_deviance_std"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">Mean Squared Error</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="mse_mean"></span>
+                                    <h5 class="card-title">Standard Deviation</h5>
+                                    <span id="mse_std"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">R&sup2;</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="r2_mean"></span>
+                                    <h5 class="card-title">Standard Deviation</h5>
+                                    <span id="r2_std"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">Poisson Deviance</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="poisson_mean"></span>
+                                    <h5 class="card-title">Standard Deviation</h5>
+                                    <span id="poisson_std"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                    <div class="row mb-2 b-2"></div>
+                    <div class="card card-counter shadow">
+                    <div class="card-body">
+                    <h5 class="card-title">Original Workload Model Performance</h5>
+                    <p class="card-text">&#9660; The current labels have been used to forecast labels for the remaining generated jobs.
+                        The model built from these jobs was tested on the original workload</p>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">Gamma Deviance</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="ow_gamma_deviance_mean"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">Mean Squared Error</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="ow_mse_mean"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">R&sup2;</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="ow_r2_mean"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h4 class="card-title">Poisson Deviance</h4>
+                                    <h5 class="card-title">Mean</h5>
+                                    <span id="ow_poisson_mean"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseOne">
+                    <h3><i class="bi bi-book-fill" style="color: Red"></i> Job Features Overview</h3>
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingOne">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Job Feature Explorer</h5>
+                                    <p class="card-text">&#9660; Compare the generated jobs on the basis of multiple features. Add or remove jobs to execute by clicking on them. Use the dropdown to plot a particular feature.</p>
+                                    <select id="selectFeature" onchange="feature_select(this)">
+                                        <option>Choose a Feature</option>
+                                    </select>
+                                    <div id="plot1_div" style="width: 100%; height: 100%;"></div>
+                                    <div id="plot2_div"></div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                                                        <div class="row mb-2 b-2"></div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Features Table</h5>
+                                    <table class="table table-sm table-striped"
+                                           id="features"
+                                           data-search="true"
+                                           data-show-fullscreen="true"
+                                           data-show-columns="true"
+                                           data-detail-formatter="detailFormatter"
+                                           data-show-columns-toggle-all="true"
+                                           data-show-pagination-switch="true"
+                                           data-pagination="true">
+                                        <thead>
+                                        <tr>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseTwo">
+                    <h3><i class="bi bi-bullseye" style="color: Fuchsia"></i> Job Uncertainty</h3>
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingTwo">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body flex-fill">
+                                    <h5 class="card-title">Uncertainty Interval Explorer</h5>
+                                    &#9660; Here you can see the uncertainty intervals of the jobs that have not been
+                                    executed yet
+                                    <div id="unc_plot_div" style="width: 100%; height: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2 b-2"></div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body flex-fill">
+                                    <h5 class="card-title">General Uncertainty Statistics</h5>
+                                    <div class="container">
+                                    <div class="row">
+                                    <div class="col-4">
+                                    <div class="card card-counter shadow">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Average Uncertainty Interval</h6>
+                                            <div id="avg_uncertainty_interval"></div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="col-4">
+                                    <div class="card card-counter shadow">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Average Lower Uncertainty Bound</h6>
+                                            <div id="avg_uncertainty_low"></div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="col-4">
+                                    <div class="card card-counter shadow">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Average Higher Uncertainty Bound</h6>
+                                            <div id="avg_uncertainty_high"></div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseThree">
+                    <h3><i class="bi bi-card-list "style="color: Green"></i> Instantiated Job Characteristics</h3>
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingThree">
+                <div class="accordion-body">
+                    <p class="card-text">&#9660; See the cardinalities of operators analyze general operator statistics</p>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <table class="table table-sm table-striped" id="data_plan_features" data-search="true" data-show-fullscreen="true">
+                                        <thead>
+                                        <tr>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="card card-counter shadow">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Average Amount of Operators</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.avg_op|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card card-counter shadow">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Standard Deviation of Operators</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.std_op|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="card card-counter shadow">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Average Operator Estimated Out Cardinality</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.avg_op_est_out_card|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card card-counter shadow">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Standard Deviation Operator Estimated Out Cardinality</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.std_op_est_out_card|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="card card-counter shadow h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Average Estimated Source Cardinality</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.avg_est_source_card|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card card-counter shadow h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Standard Deviation Estimated Source Cardinality</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.std_est_source_card|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="card card-counter shadow h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Average Estimated Sink Cardinality</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.avg_est_sink_card|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card card-counter shadow h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Standard Deviation Estimated Sink Cardinality</h5>
+                                                    {# <i class="fa fa-bar-chart">&#xf080;</i>#}
+                                                    <span class="count-numbers">{{ instantiated_plan_stats.std_est_sink_card|safe }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseFour">
+                    <h3><i class="bi bi-server" style="color: Orange"></i> Original Workload</h3>
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingFour">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Original Features</h5>
+                                    <p class="card-text">&#9660; The original workload from which we generated the new jobs</p>
+                                    <table class="table table-sm table-striped"
+                                           id="original_features"
+                                           data-search="true"
+                                           data-show-fullscreen="true"
+                                           data-show-columns="true"
+                                           data-detail-formatter="detailFormatter"
+                                           data-show-columns-toggle-all="true"
+                                           data-show-pagination-switch="true"
+                                           data-pagination="true">
+                                        <thead>
+                                        <tr>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2 b-2"></div>
+                        <div class="row">
+                        <div class="col-12">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Statistical Features Comparison</h5>
+                                    <p class="card-text">&#9660; Compare the generated and original sets on the basis of their statistical features.</p>
+                                    <table class="table table-sm table-striped"
+                                           id="features_comparison"
+                                           data-search="true"
+                                           data-show-fullscreen="true"
+                                           data-show-columns="true"
+                                           data-detail-formatter="detailFormatter"
+                                           data-show-columns-toggle-all="true"
+                                           data-show-pagination-switch="true"
+                                           data-pagination="true">
+                                        <thead>
+                                        <tr>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="panelsStayOpen-headingFive">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#panelsStayOpen-collapseFive" aria-expanded="false"
+                        aria-controls="panelsStayOpen-collapseFive">
+                    <h3><i class="bi bi-exclamation-circle" style="color: Maroon"></i> Model Explanation Analysis</h3>
+                </button>
+            </h2>
+            <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse"
+                 aria-labelledby="panelsStayOpen-headingFive">
+                <div class="accordion-body">
+                    <p class="card-text">&#9660; See how the features have been used to train the model.</p>
+                    <div id="explanation_analysis"></div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body" id="shap_summary_plot">
+                                    <img src="/shap_plot/Summary_Plot" class="img-responsive" width="100%"
+                                         height="auto"></img>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card card-counter shadow h-100">
+                                <div class="card-body" id="shap_decision_plot">
+
+                                    <img src="/shap_plot/Decision_Plot" class="img-responsive" width="100%"
+                                         height="auto"></img>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4 b-2">
+</div>
+<div class="row">
+    <div class="col">
+        <form action="/lf_iteration" id="next_iteration" method="POST">
+            <div class="row mb-3 text-center">
+                <div class="col">
+                    <button type="submit" class="btn btn-lg btn-success shadow">Execute Jobs & Run Next Iteration
+                    </button>
+                </div>
+                <div class="col"><a href="/download_generated_jobs_and_labels" role="button"
+                                    class="btn btn-primary btn-lg"><i
+                        class="fa fa-download shadow"></i>Download Training Data</a></div>
+            </div>
+        </form>
+    </div>
+
+
+        <script>
+
+
+            function on_next_iteration(url){
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "lf_iteration", true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(JSON.stringify({
+                    selected_jobs: user_selected_points
+                }));
+            }
+
+            $("#next_iteration").submit(function (e) {
+                    console.log("next iteration clicked")
+                    e.preventDefault(); // avoid to execute the actual submit of the form.
+                    setVisible('#loading', true);
+
+                    console.log(user_selected_points)
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "lf_iteration", true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.send(JSON.stringify({selected_jobs: user_selected_points
+                    }));
+                    xhr.addEventListener("load", console.log("request completed"));
+                    xhr.onreadystatechange = function() {
+                            if (xhr.readyState === 4) {
+                                window.location.replace("/"); // show response from the php script.
+                                window.location.reload();
+                            }
+                        }
+                });
+
+            // var iteration_results
+            // console.log(iteration_results)
+
+
+
+            var features = {{ features_df|safe }};
+            console.log(features)
+            var active_learning_duration = {{ active_learning_duration|safe }}
+            var original_workload = {{ original_workload|safe }};
+            console.log(original_workload)
+            var original_workload_results = {{ original_workload_results|safe }}
+            console.log(original_workload_results)
+
+            var active_learning_settings = {{ active_learning_settings|safe }};
+            console.log(active_learning_settings)
+            console.log(Object.keys(features.outCardinality_mean)[1])
+
+            var select = document.getElementById("selectFeature");
+            var options = Object.getOwnPropertyNames(features);
+            for(var i = 0; i < options.length; i++) {
+                var opt = options[i];
+                var el = document.createElement("option");
+                el.textContent = opt;
+                el.value = opt;
+                select.appendChild(el);
+
+            }
+            function feature_select(obj){
+                console.log(obj.value)
+                var feature = obj.value
+                point_res = preselected_points(features[feature])
+                var unselected_points_x =point_res[0]
+                var unselected_points_y =point_res[1]
+                var selected_points_x =point_res[2]
+                var selected_points_y = point_res[3]
+                var executed_points_x = point_res[4]
+                var executed_points_y = point_res[5]
+                plot_features(unselected_points_x, unselected_points_y, selected_points_x, selected_points_y, executed_points_x, executed_points_y, feature,  "Generated Jobs",feature, 'plot1_div')
+            }
+
+            function plot_features(xs, ys, sxs, sys, rxs, rys, title, xax,yax, div) {
+                var not_executed_points = {
+                    x: xs,
+                    y: ys,
+                    mode: 'markers',
+                    type: 'scatter',
+                    marker: {
+                        size: 8,
+                        color: Array(xs.length).fill("rgb(255,0,0)")
+                    },
+                    showlegend: true,
+                    name: "Not executed jobs"
+                }
+                console.log(sxs)
+                var selected_points =
+                    {
+                        x: sxs,
+                        y: sys,
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {
+                            size: 8,
+                            color: Array(sxs.length).fill("rgb(255,230,0)")
+                        },
+                        showlegend: true,
+                        name: "Scheduled for Execution"
+                    }
+
+                var executed_jobs =
+                    {
+                        x: rxs,
+                        y: rys,
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {
+                            size: 8,
+                            color: Array(rxs.length).fill("rgb(47,255,0)")
+                        },
+                        showlegend: true,
+                        name: "Executed"
+                    }
+
+                var layout = {
+                    title: title,
+                    autosize: true,
+                    yaxis: {
+                        title: yax,
+                    },
+                    xaxis: {
+                        title: xax,
+                        categoryorder: "category ascending"
+                    }
+                };
+
+                const complete_data = [not_executed_points, selected_points, executed_jobs];
+                const config = {responsive: true};
+                Plotly.newPlot(div, complete_data, layout, config);
+                document.getElementById(div).on('plotly_click', function (data) {
+                    console.log(data.points[0].pointNumber);
+
+                    newItem = data.points[0].x
+
+
+                    switch (data.event.button) {
+                        case 0:
+                            //Left click
+
+                            var pn='', tn='', colors=[];
+                            for(var i=0; i < data.points.length; i++){
+                                pn = data.points[i].pointNumber;
+                                tn = data.points[i].curveNumber;
+                                colors = data.points[i].data.marker.color;
+                            };
+
+                            if(executed_points.indexOf(newItem) !== -1)
+                            {
+                                // Already executed, not allowed to select
+                                break
+                            }
+
+                            if(user_selected_points.indexOf(newItem) === -1){
+                                colors[pn] = 'rgb(255,230,0)';
+                                user_selected_points.push(newItem)
+                            }
+                            else{
+                                user_selected_points.splice(user_selected_points.indexOf(newItem), 1)
+                                colors[pn] = "rgb(255,0,0)";
+                            }
+                            //Add or remove when already on list
+                            console.log(user_selected_points)
+                            var update = {'marker':{color: colors, size:8}};
+                            Plotly.restyle(div, update,tn);
+                            break
+
+                        case 1:
+                            console.log('wheel click')
+                            window.open("/lf_plan_stats/"+newItem, "_blank");
+                            break
+
+                        case 2:
+                            console.log('right click')
+                            break
+                    }
+
+
+            });
+            }
+            // Array of the names of jobs that the user selects
+            $(window).trigger('resize');
+            console.log()
+            function preselected_points(feature) {
+                var unselected_points_x =[]
+                var unselected_points_y =[]
+                var selected_points_x =[]
+                var selected_points_y = []
+                var executed_points_x=[]
+                var executed_points_y=[]
+                console.log(active_learning_settings.current_automated_sample_ids.length)
+
+                for(var i=0; i < Object.keys(feature).length; i++){
+                    if(active_learning_settings.current_automated_sample_ids.includes(i) || user_selected_points.includes(Object.keys(feature)[i]))
+                    {
+
+                        selected_points_x.push(Object.keys(feature).splice(i,1)[0]);
+                        selected_points_y.push(Object.values(feature).splice(i,1)[0]);
+
+
+                    }
+                    else if(active_learning_settings.current_executed_jobs.includes(i)){
+                        executed_points_x.push(Object.keys(feature).splice(i,1)[0]);
+                        executed_points_y.push(Object.values(feature).splice(i,1)[0]);
+
+                    }
+                    else
+                    {
+                        unselected_points_x.push(Object.keys(feature).splice(i,1)[0]);
+                        unselected_points_y.push(Object.values(feature).splice(i,1)[0]);
+                    }
+
+                    };
+                return [unselected_points_x, unselected_points_y, selected_points_x, selected_points_y, executed_points_x, executed_points_y]
+            }
+
+            selected_samples = [active_learning_settings.current_automated_sample_ids]
+            var user_selected_points = []
+            point_res = preselected_points(features.outCardinality_mean)
+            var unselected_points_x =point_res[0]
+            var unselected_points_y =point_res[1]
+            var selected_points_x =point_res[2]
+            var selected_points_y = point_res[3]
+            var executed_points_x = point_res[4]
+            var executed_points_y = point_res[5]
+            var executed_points = [...executed_points_x]
+            user_selected_points = [...selected_points_x]
+
+            // Make scheduled and executed jobs lists
+            $unselected_jobs = $('#unselected_jobs')
+            $.each(unselected_points_x, function(i, obj) {
+                $unselected_jobs.append(`<li><a target=\"_blank\" href=\"/lf_plan_stats/${obj}\"> ${obj} <a></li>`)
+            });
+            $scheduled_jobs = $('#scheduled_jobs')
+            //Todo: update for each change
+            $.each(selected_points_x, function(i, obj) {
+                $scheduled_jobs.append(`<li><a target=\"_blank\" href=\"/lf_plan_stats/${obj}\"> ${obj} <a></li>`)
+            });
+            // console.log(executed_points_x)
+            $executed_jobs = $('#executed_jobs')
+            $.each(executed_points_x, function(i, obj) {
+                $executed_jobs.append(`<li><a target=\"_blank\" href=\"/lf_plan_stats/${obj}\"> ${obj} <a></li>`)
+            });
+
+            plot_features(unselected_points_x, unselected_points_y, selected_points_x, selected_points_y, executed_points_x, executed_points_y, "Out Cardinality Mean",  "Generated Jobs","Out Cardinality Mean", 'plot1_div')
+
+            // var pointresult = preselected_points(features.complexity_mean)
+            // console.log(features)
+            // unselected_points_y_2 = pointresult[1]
+            // selected_points_y_2 = pointresult[3]
+            // executed_points_y_2
+            // plot_features(unselected_points_x, unselected_points_y_2, selected_points_x, selected_points_y_2, data_iter_sort, "Complexity Mean",  "Generated Jobs", "Complexity Mean",'plot2_div')
+          // Uncertainty plot
+            var data = {{ status["lf_iterations"]|tojson }};
+            let iteration_number = {{ status["lf_current_iteration"]|safe }}
+
+            var iteration_results = {{ iteration_results|safe}};
+            console.log(iteration_results)
+
+            if(iteration_number>0)
+            {
+                //TODO: Fix color of error bars
+                var current_iter = {{ status["lf_current_iteration"]|int }};
+                // var data_iter_sort = data[current_iter]["jobs"].sort((a, b) => a.execution_time - b.execution_time);
+                var labels = iteration_results.test_ids.map(x => x.plan_id+" "+x.data_id)
+                var low = Math.min(iteration_results.uncertainty_interval)
+                var high = Math.max(...iteration_results.uncertainty_interval)
+                var colors = []
+                console.log(high)
+                for (let i = 0; i<iteration_results.uncertainty_interval.length;i++ )
+                {
+                    item = iteration_results.uncertainty_interval[i]
+                    col = 'rgb('.concat((item/high).toString()).concat(',0,128)');
+                    colors.push(col)
+                }
+                console.log(colors)
+                // var range = high-low
+                var plot_data = [{
+                    x: labels,
+                    y: iteration_results.pred_labels,
+                    error_y: {
+                        type: 'data',
+                        array: iteration_results.uncertainty_interval,
+                        visible: true,
+                        color:  iteration_results.uncertainty_interval.map(x => "rgb("+x/high*255+",0,128)")
+                    },
+                    text: labels,
+                    mode: 'markers',
+                    type: 'scatter',
+                    marker: {
+                        size: 8,
+                        color: iteration_results.uncertainty_interval.map(x => "rgb("+x/high*255+",0,128)")
+                    },
+                    showlegend: false,
+                    name: ""
+                }
+// iteration_results.uncertainty_interval.map(x => "rgb(".concat(+x/high).concat(",0,128)")
+                ];
+
+                var layout = {
+                    autosize: true,
+                    title: 'Forecasted Labels at Iteration ' + (current_iter),
+                    yaxis: {
+                        title: 'Forecasted Label - Exec. Time (log s)',
+                    },
+                    xaxis: {
+                        title: 'Generated Jobs'
+                    }
+                };
+                const config = {responsive: true};
+                Plotly.newPlot('unc_plot_div', plot_data, layout, config);
+
+                const average =  array => array.reduce((a, b) => a + b) / array.length;
+
+                avg_uncertainty_interval = average(iteration_results.uncertainty_interval)
+                $('#avg_uncertainty_interval').append(avg_uncertainty_interval)
+
+                avg_uncertainty_low = average(iteration_results.uncertainty_low)
+                $('#avg_uncertainty_low').append(avg_uncertainty_low)
+
+                avg_uncertainty_high = average(iteration_results.uncertainty_high)
+                $('#avg_uncertainty_high').append(avg_uncertainty_high)
+            }
+
+            feature_table = {{features_table|safe}}
+            let feature_cols = Object.getOwnPropertyNames(feature_table[0]);
+            for (let i=0;i<feature_cols.length;i++){
+                $('#features >thead tr').append(`<th data-sortable="true" data-field=\"${feature_cols[i]}\">${feature_cols[i]} </th>`);
+            }
+
+            let original_workload_cols = Object.getOwnPropertyNames(original_workload[0]);
+            for (let i=0;i<original_workload_cols.length;i++){
+                $('#original_features >thead tr').append(`<th data-sortable="true" data-field=\"${original_workload_cols[i]}\">${original_workload_cols[i]} </th>`);
+            }
+
+            $('#original_features').bootstrapTable({
+                pagination: true,
+                data: original_workload
+            });
+
+            original_workload_description = {{ original_workload_description|safe }};
+            console.log(original_workload_description)
+            let original_workload_description_cols = Object.getOwnPropertyNames(original_workload_description[0]);
+            for (let i=0;i<original_workload_description_cols.length;i++){
+                $('#features_comparison >thead tr').append(`<th data-sortable="true" data-field=\"${original_workload_description_cols[i]}\">${original_workload_description_cols[i]} </th>`);
+            }
+            $('#features_comparison').bootstrapTable({
+                pagination: true,
+                data: original_workload_description
+            });
+
+
+            let precision = 5;
+            if(iteration_number>0){
+                $('#stats_mse').append(iteration_results["mse_mean"].toPrecision(precision))
+                $('#stats_r2').append(iteration_results["r2_mean"].toPrecision(precision))
+
+                //Model statistics
+                $('#gamma_deviance_mean').append(iteration_results["gamma_deviance_mean"].toPrecision(precision))
+                $('#gamma_deviance_std').append(iteration_results["gamma_deviance_std"].toPrecision(precision))
+
+                $('#poisson_mean').append(iteration_results["poisson_deviance_mean"].toPrecision(precision))
+                $('#poisson_std').append(iteration_results["poisson_deviance_std"].toPrecision(precision))
+
+                $('#r2_mean').append(iteration_results["r2_mean"].toPrecision(precision))
+                $('#r2_std').append(iteration_results["r2_std"].toPrecision(precision))
+
+                $('#mse_mean').append(iteration_results["mse_mean"].toPrecision(precision))
+                $('#mse_std').append(iteration_results["mse_std"].toPrecision(precision))
+
+                //Original Workload Model statistics
+                $('#ow_gamma_deviance_mean').append(original_workload_results["gamma_deviance_mean"].toPrecision(precision))
+
+                $('#ow_poisson_mean').append(original_workload_results["poisson_deviance_mean"].toPrecision(precision))
+
+                $('#ow_r2_mean').append(original_workload_results["r2_mean"].toPrecision(precision))
+
+                $('#ow_mse_mean').append(original_workload_results["mse_mean"].toPrecision(precision))
+
+
+            }
+            else{
+                $('#gamma_deviance_mean').append("Unknown")
+                $('#gamma_deviance_std').append("Unknown")
+
+                $('#poisson_mean').append("Unknown")
+                $('#poisson_std').append("Unknown")
+
+                $('#r2_mean').append("Unknown")
+                $('#r2_std').append("Unknown")
+
+                $('#mse_mean').append("Unknown")
+                $('#mse_std').append("Unknown")
+
+                executed_first_error = "<div class=\"alert alert-warning\" role=\"alert\">Please execute the first iteration in order to inspect this.</div>"
+                $('#explanation_analysis').append(executed_first_error)
+                // $('#shap_summary_plot').append(executed_first_error)
+
+                $('#unc_plot_div').append(executed_first_error)
+            }
+            $('#features').bootstrapTable({
+                pagination: true,
+                data: feature_table
+            });
+
+
+            instantiated_plan_stats = {{instantiated_plan_stats | safe}};
+            console.log(instantiated_plan_stats)
+
+            jobs_data_info = {{jobs_data_info| safe}}
+            console.log(jobs_data_info)
+
+            data_plan_features = {{data_plan_features | safe}};
+            console.log(data_plan_features)
+
+
+            console.log({{ active_learning_duration|safe }});
+            $('#data_plan_features').bootstrapTable({
+                pagination: true,
+                data: data_plan_features,
+                pagination: true,
+                search: true,
+
+                  columns: [{
+                    field: 'varName',
+                    title: 'Operator ID',
+                    sortable: true
+                  }, {
+                    field: 'pact',
+                    title: 'Operator Type',
+                    sortable: true
+                  }, {
+                    field: 'outCardinality',
+                    title: 'Output Cardinality',
+                    sortable: true
+                  }, {
+                    field: 'complexity',
+                    title: 'Complexity',
+                    sortable: true
+                  },{
+                    field: 'tables',
+                    title: 'Tables',
+                    sortable: true
+                      }]
+            });
+        </script>
+
+        {% endif %}
+         </div>
+
+
+    </div>
+</div>

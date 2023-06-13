@@ -23,7 +23,7 @@ class RandomSampler:
 
     def fit(self, df, verbose=False):
 
-        self.samples = df.reset_index().sample(self.k_sample, random_state=self.seed)
+        self.samples = df.reset_index().sample(self.k_sample)
         self.sample_ids = self.samples.index.values
 
         return self
@@ -206,7 +206,8 @@ class UnsupervisedSampler:
         from sklearn.decomposition import PCA
 
         X = df.loc[:, self.feature_cols].values
-
+        # print(self.feature_cols)
+        # X = df.reindex(columns = self.feature_cols).values
         if normalize_columns:
             X = (X - X.mean(axis=0)) / X.std(axis=0)
 
